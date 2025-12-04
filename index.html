@@ -458,6 +458,30 @@
             const experienceContainer = document.getElementById('experience-container');
             const voiceHint = document.getElementById('voice-hint');
 
+            const bgm = new Audio('ravel.mp3');
+            bgm.loop = true;
+            let page1TypingComplete = false;
+
+            // Resume background music if it was playing
+            const bgmPlaying = sessionStorage.getItem('bgmPlaying');
+            const bgmTime = sessionStorage.getItem('bgmTime');
+
+            if (bgmPlaying === 'true' && bgmTime) {
+                bgm.currentTime = parseFloat(bgmTime);
+                bgm.play().catch(e => console.log("Audio resume failed:", e));
+            }
+
+            // Typing sounds
+            let currentKeySound = 1;
+            const key1 = new Audio('key_1.wav');
+            const key2 = new Audio('key_2.wav');
+
+            function playTypingSound() {
+                const soundToPlay = currentKeySound === 1 ? key1 : key2;
+                soundToPlay.cloneNode().play().catch(e => console.log("Audio play failed:", e));
+                currentKeySound = currentKeySound === 1 ? 2 : 1;
+            }
+
             let sortedKeyboardColumns = [];
 
             function calculateKeyboardColumns() {
@@ -678,6 +702,10 @@
             }
 
             function startVUI() {
+                bgm.pause();
+                sessionStorage.setItem('bgmTime', bgm.currentTime);
+                sessionStorage.setItem('bgmPlaying', 'true');
+
                 if (!recognition) {
                     alert("이 브라우저에서는 음성 인식을 지원하지 않습니다.");
                     return;
@@ -734,6 +762,9 @@
                 }
 
                 startTypewriter(newText, () => {
+                    if (currentPage === 1) {
+                        page1TypingComplete = true;
+                    }
                     updateArrowVisibility();
                 });
             }
@@ -814,6 +845,10 @@
             window.addEventListener('keydown', (e) => {
                 e.preventDefault();
 
+                if (currentPage !== 5) {
+                    playTypingSound();
+                }
+
                 if (currentPage === 5) {
                     if (e.code === 'Escape') {
                         animateKeyPress(e.code);
@@ -878,7 +913,12 @@
                 }
 
                 if (e.code === 'ArrowRight') {
-                    if (currentPage < storyPages.length && currentPage !== 4) {
+                    if (currentPage === 1) {
+                        if (page1TypingComplete) {
+                            bgm.play().catch(e => console.log("Audio play failed:", e));
+                            setTimeout(() => goToPage(currentPage + 1), 100);
+                        }
+                    } else if (currentPage < storyPages.length && currentPage !== 4) {
                         setTimeout(() => goToPage(currentPage + 1), 100);
                     }
                     return;
@@ -887,6 +927,12 @@
                 if (e.code === 'ArrowLeft') {
                     // Left arrow navigation disabled
                     return;
+                }
+
+                if (e.key === '1' || e.key === '2' || e.key === '3') {
+                    bgm.pause();
+                    sessionStorage.setItem('bgmTime', bgm.currentTime);
+                    sessionStorage.setItem('bgmPlaying', 'true');
                 }
 
                 if (e.key === '1') window.location.href = 'index.html';

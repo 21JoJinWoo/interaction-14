@@ -785,10 +785,43 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             window.addEventListener('keydown', (e) => {
+                playTypingSound();
+                if (e.key === '1' || e.key === '2' || e.key === '3') {
+                    if (bgm) {
+                        bgm.pause();
+                        sessionStorage.setItem('bgmTime', bgm.currentTime);
+                        sessionStorage.setItem('bgmPlaying', 'true');
+                    }
+                }
+
                 if (e.key === '1') window.location.href = 'index.html';
                 if (e.key === '2') window.location.href = 'ear.html';
                 if (e.key === '3') window.location.href = 'color.html';
             });
+
+            // Resume background music if it was playing
+            const bgmPlaying = sessionStorage.getItem('bgmPlaying');
+            const bgmTime = sessionStorage.getItem('bgmTime');
+            let bgm = null;
+
+            if (bgmPlaying === 'true' && bgmTime) {
+                bgm = new Audio('ravel.mp3');
+                bgm.loop = true;
+                bgm.currentTime = parseFloat(bgmTime);
+                bgm.play().catch(e => console.log("Audio resume failed:", e));
+                bgm.play().catch(e => console.log("Audio resume failed:", e));
+            }
+
+            // Typing sounds
+            let currentKeySound = 1;
+            const key1 = new Audio('key_1.wav');
+            const key2 = new Audio('key_2.wav');
+
+            function playTypingSound() {
+                const soundToPlay = currentKeySound === 1 ? key1 : key2;
+                soundToPlay.cloneNode().play().catch(e => console.log("Audio play failed:", e));
+                currentKeySound = currentKeySound === 1 ? 2 : 1;
+            }
 
             const initialText = "사서에게 빌린 책을 갖고 책상에 앉았습니다.<br>편하게 책을 읽어 보세요.";
             const secondText = "종이를 넘기며 책을 읽어 보세요.";
@@ -802,6 +835,11 @@
 
             const endExperienceButton = document.getElementById('end-experience-button');
             endExperienceButton.addEventListener('click', () => {
+                if (bgm) {
+                    bgm.pause();
+                    sessionStorage.setItem('bgmTime', bgm.currentTime);
+                    sessionStorage.setItem('bgmPlaying', 'true');
+                }
                 window.location.href = 'ending.html';
             });
 
@@ -865,6 +903,11 @@
                 }
 
                 if (e.code === 'Space' && isEndExperienceReady) {
+                    if (bgm) {
+                        bgm.pause();
+                        sessionStorage.setItem('bgmTime', bgm.currentTime);
+                        sessionStorage.setItem('bgmPlaying', 'true');
+                    }
                     window.location.href = 'ending.html';
                 }
             });

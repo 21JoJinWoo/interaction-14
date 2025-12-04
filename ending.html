@@ -162,6 +162,34 @@
         // setTimeout(() => {
         //     window.location.href = 'index.html';
         // }, 16000); 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Resume background music if it was playing
+            const bgmPlaying = sessionStorage.getItem('bgmPlaying');
+            const bgmTime = sessionStorage.getItem('bgmTime');
+
+            if (bgmPlaying === 'true' && bgmTime) {
+                const bgm = new Audio('ravel.mp3');
+                bgm.loop = true;
+                bgm.currentTime = parseFloat(bgmTime);
+                bgm.play().catch(e => console.log("Audio resume failed:", e));
+            }
+
+            // Typing sounds
+            let currentKeySound = 1;
+            const key1 = new Audio('key_1.wav');
+            const key2 = new Audio('key_2.wav');
+
+            function playTypingSound() {
+                const soundToPlay = currentKeySound === 1 ? key1 : key2;
+                soundToPlay.cloneNode().play().catch(e => console.log("Audio play failed:", e));
+                currentKeySound = currentKeySound === 1 ? 2 : 1;
+            }
+
+            window.addEventListener('keydown', () => {
+                playTypingSound();
+            });
+        }); 
     </script>
 
 </body>
